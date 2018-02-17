@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="utf-8">
         <title>What's Open</title>
         <link rel="stylesheet" href="css/styles.css">
     </head>
@@ -39,6 +40,9 @@
 
             date_default_timezone_set('America/New_York');
             $day_of_week = (int) date("N");  // 1 for Monday to 7 for Sunday
+            $current_hour = (int) date("G");
+            $current_minute = (int) date("i");
+            $current_time = $current_hour + $current_minute / 60;
 
             $pois = array();
             if (($handle = fopen("data/hours.csv", "r")) !== FALSE) {
@@ -76,7 +80,19 @@
 
             $num_pois = count($pois);
             foreach ($pois as $poi) {
-                echo "<div class='poi-name'>" . $poi->name . "</div>";
+                $poi_open = "";
+                $hours_today = $poi->hours[$day_of_week - 1];
+                $hours_yesterday = $poi->hours[($day_of_week - 2 + 7) % 7];
+                $open_time_today = $hours_today["open_time_hours"] + $hours_today["open_time_minutes"] / 60;
+                $close_time_today = $hours_today["close_time_hours"] + $hours_today["close_time_minutes"] / 60;
+                $open_time_yesterday = $hours_yesterday["open_time_hours"] + $hours_yesterday["open_time_minutes"] / 60;
+                $close_time_yesterday = $hours_yesterday["open_time_hours"] + $hours_yesterday["close_time_minutes"] / 60;
+                if ($current_time > $open_time_today && $current_time < $close_time_today) {
+                    $poi_open = "poi-open";
+                } else if ($current_time + 24 > $open_time_yesterday && $current_time + 24 < $close_time_yesterday) {
+                    $poi_open = "poi-open";
+                }
+                echo "<div class='poi-name " . $poi_open . "'>" . $poi->name . "</div>";
                 echo "<div class='poi-hours-container'>";
                 foreach ($poi->hours as $cur_hours) {
                     echo "<div class='poi-hours'>";
