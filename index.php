@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="css/styles.css">
     </head>
     <body>
+        <div class="poi-container">
         <?php
             class POI {
                 public $name;
@@ -78,7 +79,17 @@
             }
             fclose($handle);
 
-            $num_pois = count($pois);
+            $days = array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+            echo "<div class='poi-container'>";
+            echo "<div class='poi'>";
+                echo "<div class='poi-week'>";
+                for ($cnt = 0; $cnt < 7; $cnt++) {
+                    echo "<div class='poi-hours'>";
+                    echo $days[($cnt + $day_of_week - 1) % 7];
+                    echo "</div>";
+                }
+                echo "</div>";
+            echo "</div>";
             foreach ($pois as $poi) {
                 $poi_open = "";
                 $hours_today = $poi->hours[$day_of_week - 1];
@@ -92,9 +103,11 @@
                 } else if ($current_time + 24 > $open_time_yesterday && $current_time + 24 < $close_time_yesterday) {
                     $poi_open = "poi-open";
                 }
-                echo "<div class='poi-name " . $poi_open . "'>" . $poi->name . "</div>";
-                echo "<div class='poi-hours-container'>";
-                foreach ($poi->hours as $cur_hours) {
+                echo "<div class='poi'>";
+                echo "<div class='poi-name " . $poi_open . "'><p>" . $poi->name . "</p></div>";
+                echo "<div class='poi-week " . $poi_open . "'>";
+                for ($cnt = 0; $cnt < 7; $cnt++) {
+                    $cur_hours = $poi->hours[($cnt + $day_of_week - 1) % 7];
                     echo "<div class='poi-hours'>";
                     echo $cur_hours["open_time_hours"] . ":" . $cur_hours["open_time_minutes"];
                     echo "->";
@@ -102,7 +115,10 @@
                     echo "</div>";
                 }
                 echo "</div>";
+                echo "</div>";
             }
+            echo "</div>";
         ?>
-        </body>
+        </div>
+    </body>
 </html>

@@ -1,3 +1,35 @@
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.poi {
+    /*height: 2rem;*/
+}
+.poi-name {
+    align-items: center;
+    background: #f0f0f0;
+    display: grid;
+    height: 3rem;
+    justify-items: center;
+    position: absolute;
+    width: 25%;
+}
+.poi-name p {
+    margin: 0;
+    text-align: center;
+}
+
+.poi-week {
+    align-items: center;
+    height: 3rem;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(125px, 1fr));
+    justify-items: center;
+    padding-left: 25%;
+}
+
 .poi-open {
     background: #f70;
 }
