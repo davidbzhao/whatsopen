@@ -61,7 +61,7 @@ def csv_to_json(inpath, outpath):
                         })
                 working_group['groupLocations'].append({
                     'locationName': location_name,
-                    'location_hours': location_hours
+                    'locationHours': location_hours
                 })
         with open(outpath, 'w') as of:
             json.dump(hours, of)

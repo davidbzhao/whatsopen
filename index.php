@@ -8,116 +8,70 @@
     <body>
         <div class="poi-container">
         <?php
-            class POI {
-                public $name;
-                public $hours;
-            }
-
-            function decode_time_string($time, $is_end = False) {
-                $ampm = substr($time, -2);
-                $time_digits = substr($time, 0, strlen($time) - 2);
-                $colon_pos = strrpos($time_digits, ":");
-                $time_hours = -1;
-                $time_minutes -1;
-
-                if ($colon_pos === false) {
-                    $time_hours = (int) $time_digits;
-                    $time_minutes = 0;
-                } else {
-                    $time_hours = (int) substr($time_digits, 0, $colon_pos);
-                    $time_minutes = (int) substr($time_digits, $colon_pos + 1);
-                }
-
-                if ($time_hours == 12 && $ampm == "AM") {
-                    $time_hours = 0;
-                } else if ($time_hours != 12 && $ampm == "PM") {
-                    $time_hours += 12;
-                }
-                if ($ampm == "AM" && $is_end) { 
-                    $time_hours += 24;
-                }
-                return array($time_hours, $time_minutes);
-            }
-
             date_default_timezone_set('America/New_York');
-            $day_of_week = (int) date("N");  // 1 for Monday to 7 for Sunday
+            $current_day_of_week = (int) date("N") - 1; // 0 for Monday to 6 for Sunday
             $current_hour = (int) date("G");
             $current_minute = (int) date("i");
             $current_time = $current_hour + $current_minute / 60;
 
-            $pois = array();
-            if (($handle = fopen("data/hours.csv", "r")) !== FALSE) {
-                while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                    $cols = count($data);
-                    $poi = new POI();
-                    $poi->name = $data[0];
-                    
-                    $cur_hours_arr = array();
-                    for ($c = 1; $c < $cols; $c++) {
-                        $times = explode("-", $data[$c]);
-                        if (count($times) != 2) {
-                            continue;
+            $days_of_week = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
+            echo '<div class="poi poi-header">';
+                echo '<div></div>';
+                echo '<div class="poi-week">';
+                for($cnt = 0; $cnt < 7; $cnt++) {
+                    echo '<div class="poi-hours">';
+                        if($cnt == 0) {
+                            echo 'Today';
+                        } else if($cnt == 1){
+                            echo 'Tomorrow';
+                        } else {
+                            echo $days_of_week[($cnt + $current_day_of_week) % 7];
                         }
-                        
-                        $open_time_arr = decode_time_string($times[0]);
-                        $close_time_arr = decode_time_string($times[1], True);
-                        $hours = [
-                            "open_time_hours" => $open_time_arr[0],
-                            "open_time_minutes" => $open_time_arr[1],
-                            "close_time_hours" => $close_time_arr[0],
-                            "close_time_minutes" => $close_time_arr[1]
-                        ];
+                    echo '</div>';
+                }
+                echo '</div>';
+            echo '</div>';
 
-                        array_push($cur_hours_arr, $hours);
-                    } 
-                    if (count($cur_hours_arr) == 0) {
-                        continue;
+            $json_file = file_get_contents('data/hours.json');
+            $json_string = json_decode($json_file, true);
+            foreach($json_string as $group) {
+                echo $group['groupName'] . '<br>';
+                foreach($group['groupLocations'] as $location) {
+
+                    $hours_today = $location['locationHours'][$current_day_of_week];
+                    $start_time_today = $hours_today['startTime'][0] + $hours_today['startTime'][1] / 60;
+                    $stop_time_today = $hours_today['stopTime'][0] + $hours_today['stopTime'][1] / 60;
+                    $open_right_now = False;
+                    if($current_time > $start_time_today && $current_time < $stop_time_today) {
+                        $open_right_now = True;
                     }
-                    $poi->hours = $cur_hours_arr;
-                    array_push($pois, $poi);
-                }
-            }
-            fclose($handle);
 
-            $days = array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
-            echo "<div class='poi-container'>";
-            echo "<div class='poi'>";
-                echo "<div class='poi-week'>";
-                for ($cnt = 0; $cnt < 7; $cnt++) {
-                    echo "<div class='poi-hours'>";
-                    echo $days[($cnt + $day_of_week - 1) % 7];
-                    echo "</div>";
+                    $open_now_class = '';
+                    if($open_right_now) {
+                        $open_now_class = 'poi-open';
+                    }
+
+                    echo '<div class="poi">';
+                        echo '<div class="poi-name ' . $open_now_class . '">' . $location['locationName'] . '</div>';
+                        echo '<div class="poi-week">';
+                        for($cnt = 0; $cnt < 7; $cnt++) {
+                            $day = $location['locationHours'][($cnt + $current_day_of_week) % 7];
+                            if($cnt == 0) {
+                                echo '<div class="poi-hours ' . $open_now_class . '">';
+                            } else {
+                                echo '<div class="poi-hours">';
+                            }
+                            if($day['open']) {
+                                echo date("g:iA", mktime($day['startTime'][0], $day['startTime'][1]));
+                                echo '-';
+                                echo date("g:iA", mktime($day['stopTime'][0], $day['stopTime'][1]));
+                            }
+                            echo '</div>';
+                        }
+                        echo '</div>';
+                    echo '</div>';
                 }
-                echo "</div>";
-            echo "</div>";
-            foreach ($pois as $poi) {
-                $poi_open = "";
-                $hours_today = $poi->hours[$day_of_week - 1];
-                $hours_yesterday = $poi->hours[($day_of_week - 2 + 7) % 7];
-                $open_time_today = $hours_today["open_time_hours"] + $hours_today["open_time_minutes"] / 60;
-                $close_time_today = $hours_today["close_time_hours"] + $hours_today["close_time_minutes"] / 60;
-                $open_time_yesterday = $hours_yesterday["open_time_hours"] + $hours_yesterday["open_time_minutes"] / 60;
-                $close_time_yesterday = $hours_yesterday["open_time_hours"] + $hours_yesterday["close_time_minutes"] / 60;
-                if ($current_time > $open_time_today && $current_time < $close_time_today) {
-                    $poi_open = "poi-open";
-                } else if ($current_time + 24 > $open_time_yesterday && $current_time + 24 < $close_time_yesterday) {
-                    $poi_open = "poi-open";
-                }
-                echo "<div class='poi'>";
-                echo "<div class='poi-name " . $poi_open . "'><p>" . $poi->name . "</p></div>";
-                echo "<div class='poi-week " . $poi_open . "'>";
-                for ($cnt = 0; $cnt < 7; $cnt++) {
-                    $cur_hours = $poi->hours[($cnt + $day_of_week - 1) % 7];
-                    echo "<div class='poi-hours'>";
-                    echo $cur_hours["open_time_hours"] . ":" . $cur_hours["open_time_minutes"];
-                    echo "->";
-                    echo $cur_hours["close_time_hours"] . ":" . $cur_hours["close_time_minutes"];
-                    echo "</div>";
-                }
-                echo "</div>";
-                echo "</div>";
             }
-            echo "</div>";
         ?>
         </div>
     </body>
