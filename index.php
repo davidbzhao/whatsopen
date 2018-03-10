@@ -7,6 +7,14 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     </head>
     <body>
+        <section id="header-section">
+            <div>
+                <h1>What's Open?</h1>
+                <input id="search-input" placeholder="Search..." onkeyup="searchTable()" autofocus>
+            </div>
+        </section>
+
+
         <div class="poi-container table-responsive-lg">
             <table class="table table-hover">
         <?php
@@ -51,7 +59,7 @@
                     }
 
                     echo '<tr class="' . $open_now_class . '">';
-                        echo '<th scope="row">' . $location['locationName'] . '</th>';
+                        echo '<td>' . $location['locationName'] . '</td>';
                         for($cnt = 0; $cnt < 7; $cnt++) {
                             $day = $location['locationHours'][($cnt + $current_day_of_week) % 7];
                             echo '<td>';
@@ -70,5 +78,6 @@
         ?>
             </table>
         </div>
+        <script src="js/search.js"></script>
     </body>
 </html>

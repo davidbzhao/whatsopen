@@ -7,3 +7,23 @@ html, body {
 thead {
     border-top: 2rem solid white;
 }
+
+section#header-section {
+    width: 100%;
+    height: 10rem;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+}
+section#header-section > div {
+    text-align: center;
+}
+section#header-section h1 {
+    margin-bottom: 1rem;
+}
+section#header-section input#search-input {
+    width: 100%;
+    height: 2.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
