@@ -4,9 +4,11 @@
         <meta charset="utf-8">
         <title>What's Open</title>
         <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     </head>
     <body>
-        <div class="poi-container">
+        <div class="poi-container table-responsive-lg">
+            <table class="table table-hover">
         <?php
             date_default_timezone_set('America/New_York');
             $current_day_of_week = (int) date("N") - 1; // 0 for Monday to 6 for Sunday
@@ -14,30 +16,27 @@
             $current_minute = (int) date("i");
             $current_time = $current_hour + $current_minute / 60;
 
-            $days_of_week = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
-            echo '<div class="poi poi-header">';
-                echo '<div></div>';
-                echo '<div class="poi-week">';
-                for($cnt = 0; $cnt < 7; $cnt++) {
-                    echo '<div class="poi-hours">';
-                        if($cnt == 0) {
-                            echo 'Today';
-                        } else if($cnt == 1){
-                            echo 'Tomorrow';
-                        } else {
-                            echo $days_of_week[($cnt + $current_day_of_week) % 7];
-                        }
-                    echo '</div>';
-                }
-                echo '</div>';
-            echo '</div>';
-
+            $days_of_week = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');          
+                        
             $json_file = file_get_contents('data/hours.json');
             $json_string = json_decode($json_file, true);
             foreach($json_string as $group) {
-                echo $group['groupName'] . '<br>';
+                echo '<thead><tr>';
+                echo '<th>' . $group['groupName'] . '</th>';
+                    for($cnt = 0; $cnt < 7; $cnt++) {
+                        echo '<th>';
+                            if($cnt == 0) {
+                                echo 'Today';
+                            } else if($cnt == 1){
+                                echo 'Tomorrow';
+                            } else {
+                                echo $days_of_week[($cnt + $current_day_of_week) % 7];
+                        }
+                        echo '</th>';
+                    }
+                echo '</tr></thead>';
+                echo '<tbody>';
                 foreach($group['groupLocations'] as $location) {
-
                     $hours_today = $location['locationHours'][$current_day_of_week];
                     $start_time_today = $hours_today['startTime'][0] + $hours_today['startTime'][1] / 60;
                     $stop_time_today = $hours_today['stopTime'][0] + $hours_today['stopTime'][1] / 60;
@@ -48,31 +47,28 @@
 
                     $open_now_class = '';
                     if($open_right_now) {
-                        $open_now_class = 'poi-open';
+                        $open_now_class = 'table-success';
                     }
 
-                    echo '<div class="poi">';
-                        echo '<div class="poi-name ' . $open_now_class . '">' . $location['locationName'] . '</div>';
-                        echo '<div class="poi-week">';
+                    echo '<tr class="' . $open_now_class . '">';
+                        echo '<th scope="row">' . $location['locationName'] . '</th>';
                         for($cnt = 0; $cnt < 7; $cnt++) {
                             $day = $location['locationHours'][($cnt + $current_day_of_week) % 7];
-                            if($cnt == 0) {
-                                echo '<div class="poi-hours ' . $open_now_class . '">';
-                            } else {
-                                echo '<div class="poi-hours">';
-                            }
+                            echo '<td>';
                             if($day['open']) {
-                                echo date("g:iA", mktime($day['startTime'][0], $day['startTime'][1]));
+                                echo date("g:ia", mktime($day['startTime'][0], $day['startTime'][1]));
                                 echo '-';
-                                echo date("g:iA", mktime($day['stopTime'][0], $day['stopTime'][1]));
+                                echo date("g:ia", mktime($day['stopTime'][0], $day['stopTime'][1]));
                             }
-                            echo '</div>';
+                            echo '</td>';
                         }
-                        echo '</div>';
-                    echo '</div>';
+                    echo '</tr>';
                 }
+                echo '</tbody>';
             }
+
         ?>
+            </table>
         </div>
     </body>
 </html>
