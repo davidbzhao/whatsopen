@@ -8,6 +8,17 @@ thead {
     border-top: 2rem solid white;
 }
 
+th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 125px;
+}
+
+td {
+    height: 100%;
+}
+
 section#header-section {
     width: 100%;
     height: 10rem;
@@ -27,3 +38,12 @@ section#header-section input#search-input {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
+/*
+@media(max-width: 980px) {
+    th {
+        font-size: 0.75rem;
+    }
+    td {
+        font-size: 0.85rem;
+    }
+}*/

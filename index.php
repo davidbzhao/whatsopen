@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="utf-8">
         <title>What's Open</title>
         <link rel="stylesheet" href="css/styles.css">
@@ -11,11 +12,15 @@
             <div>
                 <h1>What's Open?</h1>
                 <input id="search-input" placeholder="Search..." onkeyup="searchTable()" autofocus>
+                <div>
+                    <input id="search-open-only" type="checkbox" name="search-options" value="open-only" onchange='searchTable()'>
+                    <label for="open-only">Open locations only?</label>
+                </div>
             </div>
         </section>
 
-
-        <div class="poi-container table-responsive-lg">
+        <section id="content-section">
+        <div class="poi-container table-responsive">
             <table class="table table-hover">
         <?php
             date_default_timezone_set('America/New_York');
@@ -30,7 +35,7 @@
             $json_string = json_decode($json_file, true);
             foreach($json_string as $group) {
                 echo '<thead><tr>';
-                echo '<th>' . $group['groupName'] . '</th>';
+                echo '<th class="group-name">' . $group['groupName'] . '</th>';
                     for($cnt = 0; $cnt < 7; $cnt++) {
                         echo '<th>';
                             if($cnt == 0) {
@@ -39,7 +44,7 @@
                                 echo 'Tomorrow';
                             } else {
                                 echo $days_of_week[($cnt + $current_day_of_week) % 7];
-                        }
+                            }
                         echo '</th>';
                     }
                 echo '</tr></thead>';
@@ -78,6 +83,7 @@
         ?>
             </table>
         </div>
+        </section>
         <script src="js/search.js"></script>
     </body>
 </html>
