@@ -38,12 +38,7 @@ section#header-section input#search-input {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
-/*
-@media(max-width: 980px) {
-    th {
-        font-size: 0.75rem;
-    }
-    td {
-        font-size: 0.85rem;
-    }
-}*/
+
+col#today-column {
+    background: #FFE0CF;
+}

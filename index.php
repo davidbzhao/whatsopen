@@ -22,6 +22,10 @@
         <section id="content-section">
         <div class="poi-container table-responsive">
             <table class="table table-hover">
+                <colgroup>
+                    <col>
+                    <col id="today-column">
+                </colgroup>
         <?php
             date_default_timezone_set('America/New_York');
             $current_day_of_week = (int) date("N") - 1; // 0 for Monday to 6 for Sunday
@@ -69,9 +73,11 @@
                             $day = $location['locationHours'][($cnt + $current_day_of_week) % 7];
                             echo '<td>';
                             if($day['open']) {
-                                echo date("g:ia", mktime($day['startTime'][0], $day['startTime'][1]));
+                                // Ok this is wild, you need to define seconds as 0 and then month as 0 
+                                //      because Daylight Savings Time
+                                echo date("g:ia", mktime($day['startTime'][0], $day['startTime'][1], 0, 0));
                                 echo '-';
-                                echo date("g:ia", mktime($day['stopTime'][0], $day['stopTime'][1]));
+                                echo date("g:ia", mktime($day['stopTime'][0], $day['stopTime'][1], 0, 0));
                             }
                             echo '</td>';
                         }
