@@ -12,9 +12,19 @@
             <div>
                 <h1>What's Open?</h1>
                 <input id="search-input" placeholder="Search..." onkeyup="searchTable()" autofocus>
-                <div>
-                    <input id="search-open-only" type="checkbox" name="search-options" value="open-only" onchange='searchTable()'>
-                    <label for="open-only">Open locations only?</label>
+                <div id="search-options">
+                    <div class="bg-success text-white" onclick="toggleChildInput(this)">
+                        <div>
+                            <input id="search-open-only" type="checkbox" name="search-options" value="open-only" onchange='searchTable()' onclick='ensureOneToggle(this)'>
+                            <label for="open-only">Open places only?</label>
+                        </div>
+                    </div>
+                    <div class="bg-warning text-white" onclick="toggleChildInput(this)">
+                        <div>
+                            <input id="search-include-closing-soon" type="checkbox" name="search-options" value="include-closing-soon" onchange='searchTable()' onclick='ensureOneToggle(this)' checked>
+                            <label for="include-closing-soon">Include places closing soon?</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -30,14 +40,13 @@
             $current_time = $current_hour + $current_minute / 60;
             $before_3_am = $current_hour < 3;
 
-
             // If before 3am, the previous day will be the first column,
             //      so we need to adjust the highlighted column to the right 
             echo '<colgroup><col>';
             if($before_3_am) {
                 echo '<col>';
             }
-            echo '<col id="today-column"></colgroup>';
+            echo '<col id="today-column" class="bg-faded"></colgroup>';
 
             $days_of_week = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');          
                         
@@ -57,28 +66,62 @@
                     $start_time_today = $hours_today['startTime'][0] + $hours_today['startTime'][1] / 60;
                     $stop_time_today = $hours_today['stopTime'][0] + $hours_today['stopTime'][1] / 60;
                     $stop_time_yesterday = $hours_yesterday['stopTime'][0] + $hours_yesterday['stopTime'][1] / 60;
-                    $open_right_now = False;
-                    if(($current_time > $start_time_today && $current_time < $stop_time_today) ||
-                            ($current_time + 24 < $stop_time_yesterday)) {
-                        $open_right_now = True;
+
+                    $open_from_today = False;
+                    if($current_time > $start_time_today && $current_time < $stop_time_today) {
+                        $open_from_today = True;
                     }
 
-                    $open_now_class = '';
-                    if($open_right_now) {
-                        $open_now_class = 'table-success';
+                    $open_from_yesterday = False;
+                    if($current_time + 24 < $stop_time_yesterday) {
+                        $open_from_yesterday = True;
                     }
 
-                    echo '<tr class="' . $open_now_class . '">';
+                    $closing_soon = False;
+                    if(($stop_time_yesterday - $current_time - 24 < 1 && $stop_time_yesterday - $current_time - 24 > 0) ||
+                        ($stop_time_today - $current_time < 1 && $stop_time_today - $current_time > 0)){
+                        $closing_soon = True;
+                    }
+
+                    if($closing_soon) {
+                        echo '<tr class="table-warning">';
+                    } else if($open_from_today || $open_from_yesterday) {
+                        echo '<tr class="table-success">';
+                    } else {
+                        echo '<tr>';
+                    }
                         echo '<td>' . $location['locationName'] . '</td>';
                         for($cnt = 0; $cnt < 7; $cnt++) {
-                            $day = $location['locationHours'][($cnt + $current_day_of_week) % 7];
-                            echo '<td>';
+                            $day = $location['locationHours'][($cnt + $current_day_of_week - $before_3_am) % 7];
+                            if(($cnt == 0 && $before_3_am && $open_from_yesterday) ||
+                                ($cnt == 1 && $before_3_am && $open_from_today) ||
+                                ($cnt == 0 && !$before_3_am && $open_from_today)) {
+                                if($closing_soon) { 
+                                    echo '<td class="bg-warning text-white">';
+                                } else {
+                                    echo '<td class="bg-success text-white">';
+                                }
+                            } else {
+                                echo '<td>';
+                            }
                             if($day['open']) {
                                 // Ok this is wild, you need to define seconds as 0 and then month as 0 
                                 //      because Daylight Savings Time
-                                echo date("g:ia", mktime($day['startTime'][0], $day['startTime'][1], 0, 0));
+                                $start_time_epoch = mktime($day['startTime'][0], $day['startTime'][1], 0, 0);
+                                if($day['startTime'][1] == 0){
+                                    echo date("ga", $start_time_epoch);
+                                } else {
+                                    echo date("g:ia", $start_time_epoch);
+                                }
                                 echo '-';
-                                echo date("g:ia", mktime($day['stopTime'][0], $day['stopTime'][1], 0, 0));
+                                $stop_time_epoch = mktime($day['stopTime'][0], $day['stopTime'][1], 0, 0);
+                                if($day['stopTime'][1] == 0){
+                                    echo date("ga", $stop_time_epoch);
+                                } else {
+                                    echo date("g:ia", $stop_time_epoch);
+                                }
+                            } else {
+                                echo 'Closed';
                             }
                             echo '</td>';
                         }

@@ -21,13 +21,19 @@ td {
 
 section#header-section {
     width: 100%;
-    height: 10rem;
     display: grid;
     align-items: center;
     justify-items: center;
+    padding: 1rem;
 }
 section#header-section > div {
     text-align: center;
+    width: 35%;
+}
+@media(max-width: 980px) {
+    section#header-section > div {
+        width: initial;
+    }
 }
 section#header-section h1 {
     margin-bottom: 1rem;
@@ -38,7 +44,18 @@ section#header-section input#search-input {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
-
-col#today-column {
-    background: #FFE0CF;
+section#header-section div#search-options * {
+    cursor: pointer;
+}
+section#header-section div#search-options > div {
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    user-select: none;
+}
+section#header-section div#search-options label {
+    margin: 0;
 }

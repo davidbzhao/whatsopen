@@ -13,8 +13,9 @@ def get_nearby_places(apikey, use_cached=False):
         # lat and long of the corner
         latitude = '38.034876'
         longitude = '-78.5000052'
-        radius = '300' # meters
-        endpoint_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=%s&location=%s,%s&radius=%s' % (apikey, latitude, longitude, radius)
+        radius = '500' # meters
+        #endpoint_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=%s&location=%s,%s&radius=%s&type=restaurant' % (apikey, latitude, longitude, radius)
+        endpoint_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=%s,%s&radius=%s&type=restaurant&key=%s' % (latitude, longitude, radius, apikey)
         response = urlopen(endpoint_url)
         response_json = json.loads(response.read().decode('utf-8'))
         with open('response.pickle', 'wb') as f:
