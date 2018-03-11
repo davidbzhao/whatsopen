@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="css/styles.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     </head>
-    <body>
+    <body onload="initialize()">
         <section id="header-section">
             <div>
                 <h1>What's Open?</h1>
@@ -90,7 +90,7 @@
                     } else {
                         echo '<tr>';
                     }
-                        echo '<td>' . $location['locationName'] . '</td>';
+                        echo '<td data-alt="' . $group['groupName'] . '">' . $location['locationName'] . '</td>';
                         for($cnt = 0; $cnt < 7; $cnt++) {
                             $day = $location['locationHours'][($cnt + $current_day_of_week - $before_3_am) % 7];
                             if(($cnt == 0 && $before_3_am && $open_from_yesterday) ||

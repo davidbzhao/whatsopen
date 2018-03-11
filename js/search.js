@@ -6,12 +6,13 @@ let searchTable = () => {
     let includeClosingSoon = includeClosingSoonInput.checked;
 
     let searchInput = document.getElementById('search-input');
-    let searchText = searchInput.value.toLowerCase();
+    let searchText = searchInput.value.toLowerCase().trim();
     let tr = document.getElementsByTagName('tr');
     for(let cnt = 0, numTr = tr.length; cnt < numTr; cnt++) {
         locationTd = tr[cnt].getElementsByTagName('td')[0];
         if(locationTd) {
-            if(locationTd.innerHTML.toLowerCase().replace(/[ \"\'.,\/#!$%\^&\*;:{}=\-_`~()]/g, '').indexOf(searchText) > -1 &&
+            if((locationTd.innerHTML.toLowerCase().replace(/[ \"\'.,\/#!$%\^&\*;:{}=\-_`~()]/g, '').indexOf(searchText) > -1 ||
+                    (locationTd.dataset.alt.toLowerCase().replace(' ','').indexOf(searchText) > -1)) &&
                     ((!openOnly) || (openOnly && tr[cnt].className.indexOf('table-success') > -1)) && 
                     ((includeClosingSoon) || (!includeClosingSoon && tr[cnt].className.indexOf('table-warning') == -1))) {
                 tr[cnt].style.display = '';
@@ -37,4 +38,17 @@ let ensureOneToggle = (e) => {
 }
 
 
-searchTable();
+let makeTypingSearch = () => {
+    window.onkeydown = function(e) {
+        if(document.activeElement.id != 'search-input') {
+            let searchInput = document.getElementById('search-input');
+            searchInput.value = "";
+            searchInput.focus();
+        }
+    }
+}
+
+let initialize = () => {
+    searchTable();
+    makeTypingSearch();
+}
