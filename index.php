@@ -10,7 +10,7 @@
     <body onload="initialize()">
         <section id="header-section">
             <div>
-                <h1>What's Open?</h1>
+                <h1>What's Open @ UVA</h1>
                 <input id="search-input" placeholder="Search..." onkeyup="searchTable()" autofocus>
                 <div id="search-options">
                     <div class="bg-success text-white" onclick="toggleChildInput(this)">
@@ -36,6 +36,7 @@
             date_default_timezone_set('America/New_York');
             $current_day_of_week = (int) date("N") - 1; // 0 for Monday to 6 for Sunday
             $current_hour = (int) date("G");
+            $current_hour = 23;
             $current_minute = (int) date("i");
             $current_time = $current_hour + $current_minute / 60;
             $before_3_am = $current_hour < 3;
@@ -48,24 +49,25 @@
             }
             echo '<col id="today-column" class="bg-faded"></colgroup>';
 
-            $days_of_week = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');          
-                        
+            $days_of_week = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
             $json_file = file_get_contents('data/hours.json');
             $json_string = json_decode($json_file, true);
             foreach($json_string as $group) {
                 echo '<thead><tr>';
                 echo '<th class="group-name">' . $group['groupName'] . '</th>';
                     for($cnt = 0; $cnt < 7; $cnt++) {
-                        echo '<th>' . $days_of_week[($cnt + $current_day_of_week - $before_3_am) % 7] . '</th>';
+                        echo '<th>' . $days_of_week[($cnt + $current_day_of_week - $before_3_am + 7) % 7] . '</th>';
                     }
                 echo '</tr></thead>';
                 echo '<tbody>';
                 foreach($group['groupLocations'] as $location) {
                     $hours_today = $location['locationHours'][$current_day_of_week];
-                    $hours_yesterday = $location['locationHours'][($current_day_of_week + 6) % 7];
+                    $hours_yesterday = $location['locationHours'][($current_day_of_week - 1 + 7) % 7];
+                    $hours_tomorrow = $location['locationHours'][($current_day_of_week + 1) % 7];
                     $start_time_today = $hours_today['startTime'][0] + $hours_today['startTime'][1] / 60;
                     $stop_time_today = $hours_today['stopTime'][0] + $hours_today['stopTime'][1] / 60;
                     $stop_time_yesterday = $hours_yesterday['stopTime'][0] + $hours_yesterday['stopTime'][1] / 60;
+                    $start_time_tomorrow = $hours_tomorrow['startTime'][0] + $hours_tomorrow['startTime'][1] / 60;
 
                     $open_from_today = False;
                     if($current_time > $start_time_today && $current_time < $stop_time_today) {
@@ -77,9 +79,11 @@
                         $open_from_yesterday = True;
                     }
 
+                    $within_one_hour_of_stop_time_yesterday = ($stop_time_yesterday - $current_time - 24 < 1 && $stop_time_yesterday - $current_time - 24 > 0);
+                    $within_one_hour_of_stop_time_today = ($stop_time_today - $current_time < 1 && $stop_time_today - $current_time > 0);
+                    $within_one_hour_of_start_time_tomorrow = ($start_time_tomorrow - $current_time + 24 < 1 && $start_time_tomorrow - $current_time + 24 > 0);
                     $closing_soon = False;
-                    if(($stop_time_yesterday - $current_time - 24 < 1 && $stop_time_yesterday - $current_time - 24 > 0) ||
-                        ($stop_time_today - $current_time < 1 && $stop_time_today - $current_time > 0)){
+                    if(($within_one_hour_of_stop_time_yesterday) || ($within_one_hour_of_stop_time_today && !$within_one_hour_of_start_time_tomorrow)) {
                         $closing_soon = True;
                     }
 
@@ -92,7 +96,7 @@
                     }
                         echo '<td data-alt="' . $group['groupName'] . '">' . $location['locationName'] . '</td>';
                         for($cnt = 0; $cnt < 7; $cnt++) {
-                            $day = $location['locationHours'][($cnt + $current_day_of_week - $before_3_am) % 7];
+                            $day = $location['locationHours'][($cnt + $current_day_of_week - $before_3_am + 7) % 7];
                             if(($cnt == 0 && $before_3_am && $open_from_yesterday) ||
                                 ($cnt == 1 && $before_3_am && $open_from_today) ||
                                 ($cnt == 0 && !$before_3_am && $open_from_today)) {

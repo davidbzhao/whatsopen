@@ -6,19 +6,21 @@ let searchTable = () => {
     let includeClosingSoon = includeClosingSoonInput.checked;
 
     let searchInput = document.getElementById('search-input');
-    let searchText = searchInput.value.toLowerCase().trim();
+    let searchText = searchInput.value.toLowerCase().replace(/[ \"\'.,\/#!$%\^&\*;:{}=\-_`~()]/g, '');
     let tr = document.getElementsByTagName('tr');
     for(let cnt = 0, numTr = tr.length; cnt < numTr; cnt++) {
         locationTd = tr[cnt].getElementsByTagName('td')[0];
         if(locationTd) {
-            if((locationTd.innerHTML.toLowerCase().replace(/[ \"\'.,\/#!$%\^&\*;:{}=\-_`~()]/g, '').indexOf(searchText) > -1 ||
-                    (locationTd.dataset.alt.toLowerCase().replace(' ','').indexOf(searchText) > -1)) &&
-                    ((!openOnly) || (openOnly && tr[cnt].className.indexOf('table-success') > -1)) && 
-                    ((includeClosingSoon) || (!includeClosingSoon && tr[cnt].className.indexOf('table-warning') == -1))) {
-                tr[cnt].style.display = '';
-            } else {
-                tr[cnt].style.display = 'none';
+            let locationOpen = (tr[cnt].className.indexOf('table-success') > -1) || (tr[cnt].className.indexOf('table-warning') > -1);
+            let locationClosingSoon = tr[cnt].className.indexOf('table-warning') > -1;
+            let searchTextInTitle = (locationTd.innerHTML.toLowerCase().replace(/[ \"\'.,\/#!$%\^&\*;:{}=\-_`~()]/g, '').indexOf(searchText) > -1);
+            let searchTextInTag = (locationTd.dataset.alt.toLowerCase().replace(' ','').indexOf(searchText) > -1);
+
+            let displayValue = '';
+            if((openOnly && !locationOpen) || (!includeClosingSoon && locationClosingSoon) || (!searchTextInTitle && !searchTextInTag)) {
+                displayValue = 'none';
             }
+            tr[cnt].style.display = displayValue;
         }
     }
 }
